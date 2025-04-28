@@ -1,0 +1,1834 @@
+openapi: 3.0.0
+info:
+  description: This is the Rackspace Cloud DNS v2 contract.
+  termsOfService: http://swagger.io/terms/
+  title: Cloud DNS
+  version: 2.0.0
+servers:
+- url: https://dns.api.rackspacecloud.com/v2
+security:
+- AuthToken: []
+tags:
+- name: zones
+- name: records
+- name: ptr
+- name: jobs
+- name: audits
+paths:
+  /info:
+    get:
+      description: Returns metadata about the application
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppInfo'
+          description: OK
+      summary: Get metadata info
+  /{tenantId}/zones:
+    get:
+      description: Returns a list of zones.
+      operationId: getZones
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: filter on fqdn
+        explode: true
+        in: query
+        name: fqdn
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZoneCollection'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Get all zones for a tenant.
+      tags:
+      - zones
+    post:
+      description: Creates a single zone.
+      operationId: createZone
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/ZoneCreateBody'
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zone'
+          description: Created
+          headers:
+            Location:
+              description: Link to the created zone
+              explode: false
+              schema:
+                example: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2
+                type: string
+              style: simple
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Create a zone.
+      tags:
+      - zones
+  /{tenantId}/zones/{zoneId}:
+    delete:
+      description: Deletes a single zone.
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Delete a zone.
+      tags:
+      - zones
+    get:
+      description: Returns a single zone.
+      operationId: getZone
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zone'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Get a zone by ID.
+      tags:
+      - zones
+    patch:
+      description: Partial update of a single zone.
+      operationId: updateZone
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/ZoneUpdateBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Zone'
+          description: OK
+          headers:
+            Last-Modified:
+              explode: false
+              schema:
+                example: 2017-03-13T00:20:38+00:00
+                type: string
+              style: simple
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Update a zone.
+      tags:
+      - zones
+  /{tenantId}/zones/{zoneId}/export:
+    get:
+      description: Returns a single zone in the bind9 format
+      operationId: export
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            text/vnd.bind9:
+              schema:
+                example: |
+                  ;Configuration for DNS Zone dcxis.com
+
+                  ;-----;dcxis.com;
+                  dcxis.com. 300 IN SOA dns1.stabletransit.com. ipadmin.stabletransit.com. (
+                  1534351539
+                  3600
+                  300
+                  1814400
+                  300
+                  )
+                  test.dcxis.com. 300 IN A 1.2.3.4
+                  dcxis.com. 300 IN NS dns1.stabletransit.com.
+                  dcxis.com. 300 IN NS dns2.stabletransit.com.
+                  _test._http.testsrv.dcxis.com. 300 IN SRV 5 2 80 dcxis.com.
+                  www.dcxis.com. 310 IN CNAME dcxis.com.
+                type: string
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Exports a single zone
+      tags:
+      - zones
+  /{tenantId}/zones/{zoneId}/migrate:
+    post:
+      description: Migrates a single zone to a different tenant
+      operationId: migrate
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/ZoneMigrateBody'
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: Accepted
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Migrates a single zone to a different tenant
+      tags:
+      - zones
+  /{tenantId}/zones/import:
+    post:
+      description: "This operation imports a zone, creating the zone and its records."
+      operationId: import
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          text/vnd.bind9:
+            schema:
+              example: |
+                ;Configuration for DNS Zone dcxis.com
+
+                ;-----;dcxis.com;
+                dcxis.com. 300 IN SOA dns1.stabletransit.com. ipadmin.stabletransit.com. (
+                1534351539
+                3600
+                300
+                1814400
+                300
+                )
+                test.dcxis.com. 300 IN A 1.2.3.4
+                dcxis.com. 300 IN NS dns1.stabletransit.com.
+                dcxis.com. 300 IN NS dns2.stabletransit.com.
+                _test._http.testsrv.dcxis.com. 300 IN SRV 5 2 80 dcxis.com.
+                www.dcxis.com. 310 IN CNAME dcxis.com.
+              type: string
+        description: A zone file in text format.
+        required: true
+      responses:
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: Accepted
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Import a zone file's contents.
+      tags:
+      - zones
+  /{tenantId}/zones/{zoneId}/records:
+    get:
+      description: Returns a list of records.
+      operationId: getRecords
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: record type
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordCollection'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Get all records for a zone.
+      tags:
+      - records
+    post:
+      description: Creates a single record.
+      operationId: createRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/RecordCreateBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Create a record.
+      tags:
+      - records
+  /{tenantId}/zones/{zoneId}/records/{recordId}:
+    delete:
+      description: Deletes a single record.
+      operationId: deleteRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the record
+        explode: false
+        in: path
+        name: recordId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Delete a record.
+      tags:
+      - records
+    get:
+      description: Returns a single record.
+      operationId: getRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the record
+        explode: false
+        in: path
+        name: recordId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Get a record by ID.
+      tags:
+      - records
+    patch:
+      description: Partial update of a single record.
+      operationId: updateRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the record
+        explode: false
+        in: path
+        name: recordId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/RecordUpdateBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+          description: OK
+          headers:
+            Last-Modified:
+              explode: false
+              schema:
+                example: 2017-03-13T00:20:38+00:00
+                type: string
+              style: simple
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Update a record.
+      tags:
+      - records
+  /{tenantId}/ptr:
+    get:
+      description: Returns a list of PTR records.
+      operationId: getPtrRecords
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: PTR record IP address
+        explode: true
+        in: query
+        name: ipAddress
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PtrRecordCollection'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Get all PTR records for a tenant.
+      tags:
+      - ptr
+    post:
+      description: Creates a single PTR record.
+      operationId: createPtrRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/PtrCreateBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PtrRecord'
+          description: OK
+          headers:
+            Last-Modified:
+              explode: false
+              schema:
+                example: 2017-03-13T00:20:38+00:00
+                type: string
+              style: simple
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Create a PTR record.
+      tags:
+      - ptr
+  /{tenantId}/ptr/{ptrId}:
+    delete:
+      description: Deletes a single PTR record.
+      operationId: deletePtrRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the PTR record
+        explode: false
+        in: path
+        name: ptrId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Delete a PTR record.
+      tags:
+      - ptr
+    get:
+      description: Returns a single PTR record.
+      operationId: getPtrRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the PTR record
+        explode: false
+        in: path
+        name: ptrId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PtrRecord'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Get a PTR record by ID.
+      tags:
+      - ptr
+    patch:
+      description: Partial update of a single PTR record.
+      operationId: updatePtrRecord
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the PTR record
+        explode: false
+        in: path
+        name: ptrId
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        $ref: '#/components/requestBodies/PtrUpdateBody'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PtrRecord'
+          description: OK
+          headers:
+            Last-Modified:
+              explode: false
+              schema:
+                example: 2017-03-13T00:20:38+00:00
+                type: string
+              style: simple
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Update a PTR record.
+      tags:
+      - ptr
+  /{tenantId}/jobs:
+    get:
+      description: Returns a list of jobs.
+      operationId: getJobs
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCollection'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Get all jobs for a tenant.
+      tags:
+      - jobs
+  /{tenantId}/jobs/{jobId}:
+    get:
+      description: Returns the status of a job.
+      operationId: getJob
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the job
+        explode: false
+        in: path
+        name: jobId
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "429":
+          description: Too Many Requests
+      summary: Get job by ID.
+      tags:
+      - jobs
+  /{tenantId}/zones/{zoneId}/audits:
+    get:
+      description: Returns a list of audits.
+      operationId: getAudits
+      parameters:
+      - description: ID of the tenant
+        explode: false
+        in: path
+        name: tenantId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of the zone
+        explode: false
+        in: path
+        name: zoneId
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: archived audits for specific month. Must be between 01 and 12
+        explode: true
+        in: query
+        name: month
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: archived audits for specific year. Required if month is included.
+          Must be current or previous year value in CCYY format
+        explode: true
+        in: query
+        name: year
+        required: false
+        schema:
+          example: "2020"
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditCollection'
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "429":
+          description: Too Many Requests
+      summary: Get all audits for a zone.
+      tags:
+      - audits
+components:
+  requestBodies:
+    ZoneCreateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ZoneCreate'
+      description: A JSON object containing zone data.
+      required: true
+    ZoneUpdateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ZoneUpdate'
+      description: A JSON object containing zone data.
+      required: true
+    ZoneMigrateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ZoneMigrate'
+      description: A JSON object containing new tenant ID.
+      required: true
+    RecordCreateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecordCreate'
+      description: A JSON object containing record data.
+      required: true
+    RecordUpdateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RecordUpdate'
+      description: A JSON object containing record data.
+      required: true
+    PtrCreateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PtrCreate'
+      description: A JSON object for the creation of a PTR record.
+      required: true
+    PtrUpdateBody:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PtrUpdate'
+      description: "A JSON object for the partial update, or idempotent create or\
+        \ update, of PTR record data."
+      required: true
+  schemas:
+    AppInfo:
+      example:
+        contractVersions:
+        - v1.0
+        - v2
+        apiName: cloud-dns-api
+        apiVersion: "2.0"
+        commit: abc1234
+        branch: DCXDNS-123
+        deployDate: 2020-06-09T21:24:00Z
+      properties:
+        apiName:
+          example: cloud-dns-api
+          type: string
+        apiVersion:
+          example: "2.0"
+          type: string
+        contractVersions:
+          example:
+          - v1.0
+          - v2
+          items:
+            type: string
+          type: array
+        branch:
+          example: DCXDNS-123
+          type: string
+        commit:
+          example: abc1234
+          type: string
+        deployDate:
+          example: 2020-06-09T21:24:00Z
+          format: date-time
+          type: string
+      type: object
+    Zone:
+      example:
+        serialNumber: 1489364482
+        updatedBy: testuser
+        fqdn: example.com
+        created: 2017-03-13T00:20:38Z
+        refresh: 21600
+        updateRetry: 3600
+        ttl: 300
+        minimumTtl: 300
+        createdBy: testuser
+        tenantId: "1234567"
+        comment: This is a zone comment.
+        links:
+        - rel: self
+          href: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2
+          id: c8089680-e908-44e2-99f4-64f60b5133a2
+        - rel: self
+          href: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2
+          id: c8089680-e908-44e2-99f4-64f60b5133a2
+        id: c8089680-e908-44e2-99f4-64f60b5133a2
+        expiry: 1814400
+        updated: 2017-03-13T00:21:22Z
+        email: hostmaster@rackspace.com
+      properties:
+        id:
+          example: c8089680-e908-44e2-99f4-64f60b5133a2
+          type: string
+        fqdn:
+          example: example.com
+          type: string
+        email:
+          example: hostmaster@rackspace.com
+          type: string
+        tenantId:
+          example: "1234567"
+          type: string
+        serialNumber:
+          example: 1489364482
+          type: integer
+        ttl:
+          example: 300
+          type: integer
+        minimumTtl:
+          example: 300
+          type: integer
+        expiry:
+          example: 1814400
+          type: integer
+        refresh:
+          example: 21600
+          type: integer
+        updateRetry:
+          example: 3600
+          type: integer
+        created:
+          example: 2017-03-13T00:20:38Z
+          format: date-time
+          type: string
+        createdBy:
+          example: testuser
+          type: string
+        updated:
+          example: 2017-03-13T00:21:22Z
+          format: date-time
+          type: string
+        updatedBy:
+          example: testuser
+          type: string
+        comment:
+          example: This is a zone comment.
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/Zone_links_inner'
+          type: array
+      type: object
+    ZoneSelfLink:
+      example:
+        rel: self
+        href: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2
+        id: c8089680-e908-44e2-99f4-64f60b5133a2
+      properties:
+        rel:
+          example: self
+          type: string
+        href:
+          example: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2
+          type: string
+        id:
+          example: c8089680-e908-44e2-99f4-64f60b5133a2
+          type: string
+      type: object
+    ZoneRecordLink:
+      properties:
+        rel:
+          example: records
+          type: string
+        href:
+          example: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2/records
+          type: string
+        id:
+          type: string
+          example: null
+      type: object
+    PaginationLink:
+      example:
+        rel: next
+        href: href
+        id: id
+      properties:
+        rel:
+          example: next
+          type: string
+        href:
+          type: string
+          example: null
+        id:
+          type: string
+          example: null
+      type: object
+    ZoneCollection:
+      example:
+        links:
+        - rel: next
+          href: href
+          id: id
+        - rel: next
+          href: href
+          id: id
+        zones:
+        - "{}"
+        - "{}"
+      properties:
+        zones:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Zone'
+            type: object
+          minItems: 0
+          type: array
+        links:
+          items:
+            $ref: '#/components/schemas/ZoneCollection_links_inner'
+          type: array
+      type: object
+    ZoneCreate:
+      example:
+        fqdn: example.com
+        comment: This is a zone comment.
+        ttl: 300
+        email: hostmaster@rackspace.com
+      properties:
+        fqdn:
+          example: example.com
+          type: string
+        email:
+          example: hostmaster@rackspace.com
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        comment:
+          example: This is a zone comment.
+          type: string
+      type: object
+    ZoneMigrate:
+      example:
+        newTenantId: "123456"
+      properties:
+        newTenantId:
+          example: "123456"
+          type: string
+      type: object
+    ZoneUpdate:
+      example:
+        comment: This is a zone comment.
+        ttl: 300
+        email: hostmaster@rackspace.com
+      properties:
+        email:
+          example: hostmaster@rackspace.com
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        comment:
+          example: This is a zone comment.
+          type: string
+      type: object
+    Record:
+      example:
+        flag: 0
+        updatedBy: testuser
+        fqdn: example.com
+        created: 2017-03-13T00:20:38Z
+        destination: 1.2.3.4
+        weight: 0
+        type: A
+        priority: 5
+        ttl: 300
+        protocol: _tcp
+        port: 123456
+        createdBy: testuser
+        service: _app-server
+        tenantId: "1234567"
+        zoneId: c8089680-e908-44e2-99f4-64f60b5133a2
+        comment: This is a record comment.
+        links:
+        - rel: self
+          href: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2/records/af4d7e6c-4173-4a6a-a537-6645a868e65f
+          id: af4d7e6c-4173-4a6a-a537-6645a868e65f
+        - rel: self
+          href: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2/records/af4d7e6c-4173-4a6a-a537-6645a868e65f
+          id: af4d7e6c-4173-4a6a-a537-6645a868e65f
+        id: af4d7e6c-4173-4a6a-a537-6645a868e65f
+        text: This is the text field for a TXT record.
+        tag: iodef
+        updated: 2017-03-13T00:21:22Z
+      properties:
+        id:
+          example: af4d7e6c-4173-4a6a-a537-6645a868e65f
+          type: string
+        type:
+          enum:
+          - A
+          - AAAA
+          - CAA
+          - CNAME
+          - DNAME
+          - MX
+          - NS
+          - SRV
+          - TXT
+          example: A
+          type: string
+        fqdn:
+          example: example.com
+          type: string
+        destination:
+          example: 1.2.3.4
+          type: string
+        tenantId:
+          example: "1234567"
+          type: string
+        zoneId:
+          example: c8089680-e908-44e2-99f4-64f60b5133a2
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        service:
+          example: _app-server
+          type: string
+        protocol:
+          example: _tcp
+          type: string
+        port:
+          example: 123456
+          type: integer
+        weight:
+          example: 0
+          type: integer
+        priority:
+          example: 5
+          type: integer
+        text:
+          example: This is the text field for a TXT record.
+          type: string
+        flag:
+          example: 0
+          type: integer
+        tag:
+          example: iodef
+          type: string
+        created:
+          example: 2017-03-13T00:20:38Z
+          format: date-time
+          type: string
+        createdBy:
+          example: testuser
+          type: string
+        updated:
+          example: 2017-03-13T00:21:22Z
+          format: date-time
+          type: string
+        updatedBy:
+          example: testuser
+          type: string
+        comment:
+          example: This is a record comment.
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/RecordSelfLink'
+          type: array
+      type: object
+    RecordSelfLink:
+      example:
+        rel: self
+        href: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2/records/af4d7e6c-4173-4a6a-a537-6645a868e65f
+        id: af4d7e6c-4173-4a6a-a537-6645a868e65f
+      properties:
+        rel:
+          example: self
+          type: string
+        href:
+          example: https://dns.api.rackspacecloud.com/v2/1234567/zones/c8089680-e908-44e2-99f4-64f60b5133a2/records/af4d7e6c-4173-4a6a-a537-6645a868e65f
+          type: string
+        id:
+          example: af4d7e6c-4173-4a6a-a537-6645a868e65f
+          type: string
+      type: object
+    RecordCollection:
+      example:
+        records:
+        - "{}"
+        - "{}"
+        links:
+        - rel: next
+          href: href
+          id: id
+        - rel: next
+          href: href
+          id: id
+      properties:
+        records:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Record'
+            type: object
+          minItems: 0
+          type: array
+        links:
+          items:
+            $ref: '#/components/schemas/ZoneCollection_links_inner'
+          type: array
+      type: object
+    RecordCreate:
+      example:
+        flag: 0
+        fqdn: example.com
+        destination: 1.2.3.4
+        weight: 0
+        type: A
+        priority: 5
+        ttl: 300
+        protocol: _tcp
+        port: 123456
+        service: _app-server
+        comment: This is a record comment.
+        text: This is the text field for a TXT record.
+        tag: iodef
+      properties:
+        type:
+          enum:
+          - A
+          - AAAA
+          - CAA
+          - CNAME
+          - DNAME
+          - MX
+          - NS
+          - SRV
+          - TXT
+          example: A
+          type: string
+        fqdn:
+          example: example.com
+          type: string
+        destination:
+          example: 1.2.3.4
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        service:
+          example: _app-server
+          type: string
+        protocol:
+          example: _tcp
+          type: string
+        port:
+          example: 123456
+          type: integer
+        weight:
+          example: 0
+          type: integer
+        priority:
+          example: 5
+          type: integer
+        text:
+          example: This is the text field for a TXT record.
+          type: string
+        flag:
+          example: 0
+          type: integer
+        tag:
+          example: iodef
+          type: string
+        comment:
+          example: This is a record comment.
+          type: string
+      type: object
+    RecordUpdate:
+      example:
+        protocol: _tcp
+        flag: 0
+        fqdn: example.com
+        port: 123456
+        service: _app-server
+        destination: 1.2.3.4
+        weight: 0
+        comment: This is a record comment.
+        text: This is the text field for a TXT record.
+        tag: iodef
+        priority: 5
+        ttl: 300
+      properties:
+        fqdn:
+          example: example.com
+          type: string
+        destination:
+          example: 1.2.3.4
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        service:
+          example: _app-server
+          type: string
+        protocol:
+          example: _tcp
+          type: string
+        port:
+          example: 123456
+          type: integer
+        weight:
+          example: 0
+          type: integer
+        priority:
+          example: 5
+          type: integer
+        text:
+          example: This is the text field for a TXT record.
+          type: string
+        flag:
+          example: 0
+          type: integer
+        tag:
+          example: iodef
+          type: string
+        comment:
+          example: This is a record comment.
+          type: string
+      type: object
+    PtrCreate:
+      example:
+        cloudUrl: https://dfw.servers.api.rackspacecloud.com/v1.0/1234567/servers/1234567
+        fqdn: example.com
+        ipAddress: 1.2.3.4
+        comment: This IP is for production
+        serviceName: cloudServersOpenStack
+        ttl: 300
+      properties:
+        fqdn:
+          example: example.com
+          type: string
+        ipAddress:
+          example: 1.2.3.4
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        comment:
+          example: This IP is for production
+          type: string
+        cloudUrl:
+          example: https://dfw.servers.api.rackspacecloud.com/v1.0/1234567/servers/1234567
+          type: string
+        serviceName:
+          example: cloudServersOpenStack
+          type: string
+      required:
+      - fqdn
+      - ipAddress
+      type: object
+    PtrUpdate:
+      example:
+        fqdn: example.com
+        comment: This IP is for development
+        ttl: 300
+      properties:
+        fqdn:
+          example: example.com
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        comment:
+          example: This IP is for development
+          type: string
+      type: object
+    PtrRecord:
+      example:
+        updatedBy: testuser
+        fqdn: example.com
+        created: 2017-03-13T00:20:38Z
+        ipAddress: 1.2.3.4
+        type: PTR
+        ttl: 300
+        createdBy: testuser
+        tenantId: "1234567"
+        zoneId: c8089680-e908-44e2-99f4-64f60b5133a2
+        comment: This is a record comment.
+        links:
+        - rel: self
+          href: https://dns.api.rackspacecloud.com/v2/1234567/ptr/af4d7e6c-4173-4a6a-a537-6645a868e65f
+          id: 1.2.3.4
+        - rel: self
+          href: https://dns.api.rackspacecloud.com/v2/1234567/ptr/af4d7e6c-4173-4a6a-a537-6645a868e65f
+          id: 1.2.3.4
+        id: af4d7e6c-4173-4a6a-a537-6645a868e65f
+        updated: 2017-03-13T00:21:22Z
+      properties:
+        id:
+          example: af4d7e6c-4173-4a6a-a537-6645a868e65f
+          type: string
+        type:
+          enum:
+          - PTR
+          example: PTR
+          type: string
+        fqdn:
+          example: example.com
+          type: string
+        ipAddress:
+          example: 1.2.3.4
+          type: string
+        tenantId:
+          example: "1234567"
+          type: string
+        zoneId:
+          example: c8089680-e908-44e2-99f4-64f60b5133a2
+          type: string
+        ttl:
+          example: 300
+          type: integer
+        created:
+          example: 2017-03-13T00:20:38Z
+          format: date-time
+          type: string
+        createdBy:
+          example: testuser
+          type: string
+        updated:
+          example: 2017-03-13T00:21:22Z
+          format: date-time
+          type: string
+        updatedBy:
+          example: testuser
+          type: string
+        comment:
+          example: This is a record comment.
+          type: string
+        links:
+          items:
+            $ref: '#/components/schemas/PtrRecordSelfLink'
+          type: array
+      type: object
+    PtrRecordSelfLink:
+      example:
+        rel: self
+        href: https://dns.api.rackspacecloud.com/v2/1234567/ptr/af4d7e6c-4173-4a6a-a537-6645a868e65f
+        id: 1.2.3.4
+      properties:
+        rel:
+          example: self
+          type: string
+        href:
+          example: https://dns.api.rackspacecloud.com/v2/1234567/ptr/af4d7e6c-4173-4a6a-a537-6645a868e65f
+          type: string
+        id:
+          example: 1.2.3.4
+          type: string
+      type: object
+    PtrRecordCollection:
+      example:
+        links:
+        - rel: next
+          href: href
+          id: id
+        - rel: next
+          href: href
+          id: id
+        ptrRecords:
+        - "{}"
+        - "{}"
+      properties:
+        ptrRecords:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/PtrRecord'
+            type: object
+          minItems: 0
+          type: array
+        links:
+          items:
+            $ref: '#/components/schemas/ZoneCollection_links_inner'
+          type: array
+      type: object
+    Job:
+      example:
+        updatedBy: testuser
+        createdBy: testuser
+        created: 2017-03-13T00:20:38Z
+        response:
+          fqdn: example.com
+          zoneId: 12345-67890
+        action: zone import
+        callbackUrl: https://dns.api.rackspacecloud.com/v2/jobs/6c4441b2-a3ac-475b-9e61-2ff8f95ca42a
+        id: 6c4441b2-a3ac-475b-9e61-2ff8f95ca42a
+        completed: 25
+        message: error message
+        updated: 2017-03-13T00:21:22Z
+        status: RUNNING
+      properties:
+        id:
+          example: 6c4441b2-a3ac-475b-9e61-2ff8f95ca42a
+          format: uuid4
+          type: string
+        action:
+          enum:
+          - zone import
+          example: zone import
+          type: string
+        status:
+          enum:
+          - RUNNING
+          - COMPLETED
+          - ERROR
+          example: RUNNING
+          type: string
+        callbackUrl:
+          example: https://dns.api.rackspacecloud.com/v2/jobs/6c4441b2-a3ac-475b-9e61-2ff8f95ca42a
+          type: string
+        created:
+          example: 2017-03-13T00:20:38Z
+          format: date-time
+          type: string
+        createdBy:
+          example: testuser
+          type: string
+        updated:
+          example: 2017-03-13T00:21:22Z
+          format: date-time
+          type: string
+        updatedBy:
+          example: testuser
+          type: string
+        message:
+          example: error message
+          type: string
+        completed:
+          example: 25
+          type: number
+        response:
+          $ref: '#/components/schemas/Job_response'
+      type: object
+    JobCollection:
+      example:
+        jobs:
+        - "{}"
+        - "{}"
+        links:
+        - rel: next
+          href: href
+          id: id
+        - rel: next
+          href: href
+          id: id
+      properties:
+        jobs:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Job'
+            type: object
+          minItems: 0
+          type: array
+        links:
+          items:
+            $ref: '#/components/schemas/ZoneCollection_links_inner'
+          type: array
+      type: object
+    Audit:
+      properties:
+        action:
+          example: INSERT
+          type: string
+        after:
+          example: "{\"serialNumber\":1581033137,\"fqdn\":\"example.com\",\"created\"\
+            :\"2020-02-06T23:52:17.660Z\",\"refresh\":3600,\"updateRetry\":300,\"\
+            type\":\"zone\",\"ttl\":302,\"minimumTtl\":300,\"tenantId\":\"1234\",\"\
+            zoneId\":\"ad758d45-bbd8-487a-8fa0-2f6b602f9569\",\"comment\":\"string_3_ha8oz5z\"\
+            ,\"expiry\":1814400,\"updated\":\"2020-02-06T23:52:17.660Z\",\"email\"\
+            :\"user3@example.com\"}"
+          type: string
+        auditId:
+          example: 01701ceb-277a-46e3-b669-2a29b64ae630
+          type: string
+        before:
+          example: "{}"
+          type: string
+        createdBy:
+          example: exampleuser
+          type: string
+        createdOn:
+          example: 2020-02-06T23:52:17.66Z
+          format: date-time
+          type: string
+        fqdn:
+          example: example.com
+          type: string
+        recordId:
+          type: string
+          example: null
+        serialNumber:
+          example: 1582322398
+          type: number
+        tenantId:
+          example: "1234"
+          type: string
+        type:
+          example: zone
+          type: string
+        zoneId:
+          example: ad758d45-bbd8-487a-8fa0-2f6b602f9569
+          type: string
+      type: object
+    AuditCollection:
+      example:
+        links:
+        - rel: next
+          href: href
+          id: id
+        - rel: next
+          href: href
+          id: id
+        audits:
+        - "{}"
+        - "{}"
+      properties:
+        audits:
+          items:
+            allOf:
+            - $ref: '#/components/schemas/Audit'
+            type: object
+          minItems: 0
+          type: array
+        links:
+          items:
+            $ref: '#/components/schemas/ZoneCollection_links_inner'
+          type: array
+      type: object
+    Zone_links_inner:
+      oneOf:
+      - $ref: '#/components/schemas/ZoneSelfLink'
+      - $ref: '#/components/schemas/ZoneRecordLink'
+    ZoneCollection_links_inner:
+      oneOf:
+      - $ref: '#/components/schemas/PaginationLink'
+    Job_response:
+      example:
+        fqdn: example.com
+        zoneId: 12345-67890
+      properties:
+        zoneId:
+          example: 12345-67890
+          type: string
+        fqdn:
+          example: example.com
+          type: string
+      type: object
+  securitySchemes:
+    AuthToken:
+      in: header
+      name: X-Auth-Token
+      type: apiKey
