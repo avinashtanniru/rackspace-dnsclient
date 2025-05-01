@@ -139,9 +139,9 @@ func (tm *TokenManager) ManageToken() (string, error) {
 	if tm.IsTokenExpired() {
 		// fmt.Println("Token is expired or not yet generated.")
 	} else {
-		fmt.Println("Token is still valid.")
-		fmt.Printf("Current token: %s\n", tm.Token)
-		fmt.Printf("Token expires at: %s\n", tm.Expires.Format(time.RFC3339))
+		// fmt.Println("Token is still valid.")
+		// fmt.Printf("Current token: %s\n", tm.Token)
+		// fmt.Printf("Token expires at: %s\n", tm.Expires.Format(time.RFC3339))
 	}
 
 	// fmt.Println("Attempting to retrieve token...")
