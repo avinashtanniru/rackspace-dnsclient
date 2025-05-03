@@ -35,7 +35,8 @@ type Zone struct {
 	Updated *time.Time `json:"updated,omitempty"`
 	UpdatedBy *string `json:"updatedBy,omitempty"`
 	Comment *string `json:"comment,omitempty"`
-	Links []ZoneLinksInner `json:"links,omitempty"`
+	Links []ZoneSelfLink `json:"links,omitempty"`
+	// Links []ZoneLinksInner `json:"links,omitempty"`
 }
 
 // NewZone instantiates a new Zone object
@@ -536,22 +537,35 @@ func (o *Zone) SetComment(v string) {
 }
 
 // GetLinks returns the Links field value if set, zero value otherwise.
-func (o *Zone) GetLinks() []ZoneLinksInner {
+func (o *Zone) GetLinks() []ZoneSelfLink {
 	if o == nil || IsNil(o.Links) {
-		var ret []ZoneLinksInner
+		var ret []ZoneSelfLink
 		return ret
 	}
 	return o.Links
 }
+// func (o *Zone) GetLinks() []ZoneLinksInner {
+// 	if o == nil || IsNil(o.Links) {
+// 		var ret []ZoneLinksInner
+// 		return ret
+// 	}
+// 	return o.Links
+// }
 
 // GetLinksOk returns a tuple with the Links field value if set, nil otherwise
 // and a boolean to check if the value has been set.
-func (o *Zone) GetLinksOk() ([]ZoneLinksInner, bool) {
+func (o *Zone) GetLinksOk() ([]ZoneSelfLink, bool) {
 	if o == nil || IsNil(o.Links) {
 		return nil, false
 	}
 	return o.Links, true
 }
+// func (o *Zone) GetLinksOk() ([]ZoneLinksInner, bool) {
+// 	if o == nil || IsNil(o.Links) {
+// 		return nil, false
+// 	}
+// 	return o.Links, true
+// }
 
 // HasLinks returns a boolean if a field has been set.
 func (o *Zone) HasLinks() bool {
@@ -563,9 +577,12 @@ func (o *Zone) HasLinks() bool {
 }
 
 // SetLinks gets a reference to the given []ZoneLinksInner and assigns it to the Links field.
-func (o *Zone) SetLinks(v []ZoneLinksInner) {
+func (o *Zone) SetLinks(v []ZoneSelfLink) {
 	o.Links = v
 }
+// func (o *Zone) SetLinks(v []ZoneLinksInner) {
+// 	o.Links = v
+// }
 
 func (o Zone) MarshalJSON() ([]byte, error) {
 	toSerialize,err := o.ToMap()
